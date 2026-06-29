@@ -135,9 +135,9 @@ def request_admin() -> None:
     ret = ctypes.windll.shell32.ShellExecuteW(
         None, "runas", _python_executable(), params, str(ROOT), SW_HIDE
     )
-    if ret <= 32:
-        reason = _SHELL_EXECUTE_ERRORS.get(int(ret), f"ShellExecute 返回码 {ret}")
-        report_fatal_error(f"无法获取管理员权限 — {reason}")
+    # 用户在 UAC 提示中选择“否”（取消），或权限请求失败时，静默退出。
+    # 不再调用 report_fatal_error（它会弹出控制台和错误框），直接结束进程。
+    # 常见取消返回值：5 (ERROR_ACCESS_DENIED), 1223 (ERROR_CANCELLED)
     sys.exit(0)
 
 
