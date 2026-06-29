@@ -136,6 +136,27 @@ def ensure_admin() -> None:
     request_admin()
 
 
+# ---- 单实例控制 ----
+_MUTEX_NAME = "Local\\WarcraftKeyRemapper_SingleInstance"
+ERROR_ALREADY_EXISTS = 183
+
+
+def ensure_single_instance() -> None:
+    """通过命名互斥量保证单实例；若已有实例则弹原生提示框并退出当前进程。"""
+    kernel32 = ctypes.windll.kernel32
+    kernel32.CreateMutexW.argtypes = [ctypes.c_void_p, ctypes.c_int, ctypes.c_wchar_p]
+    kernel32.CreateMutexW.restype = ctypes.c_void_p
+    handle = kernel32.CreateMutexW(None, False, _MUTEX_NAME)
+    if not handle:
+        return  # 创建失败不阻断，继续启动
+    if kernel32.GetLastError() == ERROR_ALREADY_EXISTS:
+        user32 = ctypes.windll.user32
+        user32.MessageBoxW.argtypes = [ctypes.c_void_p, ctypes.c_wchar_p, ctypes.c_wchar_p, ctypes.c_uint]
+        # MB_OK | MB_ICONINFORMATION = 0x40
+        user32.MessageBoxW(0, "魔兽改键精灵已在运行中。", "提示", 0x40)
+        sys.exit(0)
+
+
 class AppController:
     def __init__(self) -> None:
         self.profile_service = ProfileService()
@@ -380,6 +401,7 @@ class AppController:
 def main() -> None:
     try:
         ensure_admin()
+        ensure_single_instance()
         app = AppController()
         app.run()
     except Exception as exc:

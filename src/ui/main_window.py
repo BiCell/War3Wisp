@@ -77,6 +77,8 @@ class MainWindow(tk.Tk):
         on_query_run_status: Optional[Callable[[], str]] = None,
     ) -> None:
         super().__init__()
+        # 构建期间隐藏窗口，避免控件逐个 pack 时从左上角“撑开”的视觉效果
+        self.withdraw()
         self.state = state
         self.on_save = on_save
         self.on_profile_change = on_profile_change
@@ -123,6 +125,21 @@ class MainWindow(tk.Tk):
         self._is_minimized = False
         self.bind("<Unmap>", self._on_unmap)
         self.bind("<Map>", self._on_map)
+
+        self._show_when_ready()
+
+    def _show_when_ready(self) -> None:
+        """布局全部算完后再一次性显示，避免启动时窗口从角上逐步展开。"""
+        if getattr(self, "_status_box", None) is not None:
+            self._align_status_heights(self._status_box)
+        self.update_idletasks()
+        w = self.winfo_reqwidth()
+        h = self.winfo_reqheight()
+        x = max(0, (self.winfo_screenwidth() - w) // 2)
+        y = max(0, (self.winfo_screenheight() - h) // 2)
+        self.geometry(f"{w}x{h}+{x}+{y}")
+        self.update_idletasks()
+        self.deiconify()
 
     def _on_unmap(self, event: tk.Event) -> None:
         if event.widget is self and self.state() == "iconic":
@@ -357,8 +374,7 @@ class MainWindow(tk.Tk):
         self._status_btn1.pack(side="right", padx=2)
         self._status_btn2 = self._make_button(status_row, "方案重置", self._clear_current, style="Status.TButton")
         self._status_btn2.pack(side="right", padx=2)
-        # 窗口映射后迭代实测微调，使按钮高度精确等于状态框高度
-        self.after(50, lambda: self._align_status_heights(status_box))
+        self._status_box = status_box
 
         # 仅魔兽前台改键：框外末尾，靠左
         opt_row = ttk.Frame(outer)

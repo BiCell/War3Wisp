@@ -16,6 +16,9 @@ pip-wheel-metadata/
 .installed.cfg
 MANIFEST
 
+# 解释文档
+docs/
+
 # 虚拟环境
 .venv/
 venv/
