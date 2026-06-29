@@ -17,6 +17,7 @@ MANIFEST
 
 # 解释文档
 docs/
+build/
 
 # 虚拟环境
 .venv/
