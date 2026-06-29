@@ -101,3 +101,9 @@
 pip install -r requirements.txt
 python main.py
 ```
+
+---
+
+## 交流与反馈
+
+如果你在使用过程中遇到问题、有功能建议，或愿意一起完善这个项目，欢迎通过 Issue、Pull Request、讨论区或 **GitHub 私信** 交流。每一条反馈都有助于把工具做得更稳、更好用。感谢使用。
