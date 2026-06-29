@@ -7,10 +7,14 @@ import threading
 import tkinter as tk
 from pathlib import Path
 
-# 确保可从项目根目录运行
-ROOT = Path(__file__).resolve().parent
-if str(ROOT) not in sys.path:
-    sys.path.insert(0, str(ROOT))
+# 开发模式：先把项目根加入 sys.path；打包后由 PyInstaller 处理导入
+_bootstrap_root = Path(__file__).resolve().parent
+if not getattr(sys, "frozen", False) and str(_bootstrap_root) not in sys.path:
+    sys.path.insert(0, str(_bootstrap_root))
+
+from src.paths import is_frozen, project_root
+
+ROOT = project_root()
 
 from src.keyboard_remapper import KeyboardRemapperService
 from src.models import AppState
@@ -49,6 +53,8 @@ def is_admin() -> bool:
 
 
 def _python_executable() -> str:
+    if is_frozen():
+        return str(Path(sys.executable))
     exe = Path(sys.executable)
     if exe.name.lower() == "pythonw.exe":
         py = exe.with_name("python.exe")
@@ -58,9 +64,12 @@ def _python_executable() -> str:
 
 
 def _build_launch_params() -> str:
-    script = str(Path(sys.argv[0]).resolve())
     extra = [arg for arg in sys.argv[1:] if arg != "--no-admin"]
-    parts = [f'"{script}"'] + [f'"{arg}"' for arg in extra]
+    if is_frozen():
+        parts = [f'"{Path(sys.executable).resolve()}"'] + [f'"{arg}"' for arg in extra]
+    else:
+        script = str(Path(sys.argv[0]).resolve())
+        parts = [f'"{script}"'] + [f'"{arg}"' for arg in extra]
     return " ".join(parts)
 
 

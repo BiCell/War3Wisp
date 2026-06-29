@@ -6,7 +6,9 @@ import tkinter.font as tkfont
 from pathlib import Path
 from typing import Callable, Dict, List, Optional
 
-APP_VERSION = "v4.75"
+from ..version import get_app_version
+
+APP_VERSION = get_app_version()
 
 from ..models import (
     COMBO2_ROW_COUNT,
@@ -19,6 +21,7 @@ from ..models import (
     KeyMappingRow,
     PROFILE_COUNT,
 )
+from ..paths import assets_dir
 from .key_entry import KeyCaptureEntry
 
 
@@ -95,7 +98,7 @@ class MainWindow(tk.Tk):
         self.configure(bg="#ece9d8")
 
         try:
-            base = Path(__file__).resolve().parent.parent.parent / "assets"
+            base = assets_dir()
             ico_path = base / "logo.ico"
             if ico_path.exists():
                 self.iconbitmap(str(ico_path))
@@ -203,7 +206,7 @@ class MainWindow(tk.Tk):
         header.pack(fill="x", pady=(0, 4))
 
         # ---- 左侧：logo + 标题 + 版本号 ----
-        base = Path(__file__).resolve().parent.parent.parent / "assets"
+        base = assets_dir()
         # 巫妖王 logo
         try:
             war3_path = base / "war3_logo_32.png"
