@@ -22,6 +22,7 @@ from ..models import (
     PROFILE_COUNT,
 )
 from ..paths import assets_dir
+from ..win_foreground import APP_WINDOW_TITLE, bring_tk_window_to_front
 from .key_entry import KeyCaptureEntry
 
 
@@ -93,7 +94,7 @@ class MainWindow(tk.Tk):
         self.on_disable_win_key = on_disable_win_key
         self.on_query_run_status = on_query_run_status
 
-        self.title("魔兽改键精灵")
+        self.title(APP_WINDOW_TITLE)
         self.resizable(False, False)
         self.configure(bg="#ece9d8")
 
@@ -143,9 +144,10 @@ class MainWindow(tk.Tk):
         self.geometry(f"{w}x{h}+{x}+{y}")
         self.update_idletasks()
         self.deiconify()
+        bring_tk_window_to_front(self)
 
     def _on_unmap(self, event: tk.Event) -> None:
-        if event.widget is self and self.state() == "iconic":
+        if event.widget is self and tk.Tk.state(self) == "iconic":
             self._is_minimized = True
 
     def _on_map(self, event: tk.Event) -> None:
@@ -154,7 +156,7 @@ class MainWindow(tk.Tk):
 
     @property
     def is_minimized(self) -> bool:
-        return self._is_minimized or self.state() == "iconic"
+        return self._is_minimized or tk.Tk.state(self) == "iconic"
 
     def set_close_callback(self, fn: Callable[[], None]) -> None:
         self._on_close_callback = fn

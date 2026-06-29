@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import ctypes
+from ctypes import wintypes
 import os
 import sys
 import threading
@@ -21,6 +22,7 @@ from src.models import AppState
 from src.profile_service import ProfileService
 from src.ui.main_window import MainWindow
 from src.warcraft_detector import WarcraftDetector, is_own_process_foreground
+from src.win_foreground import APP_WINDOW_TITLE, activate_existing_instance
 
 SW_HIDE = 0
 SW_SHOW = 5
@@ -160,9 +162,15 @@ def ensure_single_instance() -> None:
         return  # 创建失败不阻断，继续启动
     if kernel32.GetLastError() == ERROR_ALREADY_EXISTS:
         user32 = ctypes.windll.user32
-        user32.MessageBoxW.argtypes = [ctypes.c_void_p, ctypes.c_wchar_p, ctypes.c_wchar_p, ctypes.c_uint]
-        # MB_OK | MB_ICONINFORMATION = 0x40
-        user32.MessageBoxW(0, "魔兽改键精灵已在运行中。", "提示", 0x40)
+        user32.MessageBoxW.argtypes = [wintypes.HWND, wintypes.LPCWSTR, wintypes.LPCWSTR, wintypes.UINT]
+        existing_hwnd = activate_existing_instance()
+        # MB_OK | MB_ICONINFORMATION | MB_TOPMOST | MB_SETFOREGROUND
+        user32.MessageBoxW(
+            existing_hwnd or 0,
+            "魔兽改键精灵已在运行中。",
+            "提示",
+            0x40 | 0x40000 | 0x10000,
+        )
         sys.exit(0)
 
 
